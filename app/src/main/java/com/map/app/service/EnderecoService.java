@@ -69,22 +69,12 @@ public class EnderecoService {
         if (enderecoExistenteOptional.isPresent()) {
             Endereco enderecoExistente = enderecoExistenteOptional.get();
 
-            if (endereco.getEstado() != null) {
-                enderecoExistente.setEstado(endereco.getEstado());
-            }
+            enderecoExistente.setEstado(endereco.getEstado());
+            enderecoExistente.setCidade(endereco.getCidade());
+            enderecoExistente.setRua(endereco.getRua());
+            enderecoExistente.setNumero(endereco.getNumero());
+            enderecoExistente.setCep(endereco.getCep());
 
-            if (endereco.getCidade() != null) {
-                enderecoExistente.setCidade(endereco.getCidade());
-            }
-            if (endereco.getRua() != null) {
-                enderecoExistente.setRua(endereco.getRua());
-            }
-            if (endereco.getNumero() != 0) {
-                enderecoExistente.setNumero(endereco.getNumero());
-            }
-            if (endereco.getCep() != null) {
-                enderecoExistente.setCep(endereco.getCep());
-            }
             enderecoRepository.save(enderecoExistente);
         } else {
             throw new IllegalArgumentException("ID Inválido!");
