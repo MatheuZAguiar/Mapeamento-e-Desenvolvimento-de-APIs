@@ -25,7 +25,4 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
     @Query("SELECT e FROM Paciente e WHERE e.telefone = :telefone")
     public Paciente findByTelefone(@Param("telefone") String telefone);
 
-    @Query("SELECT e FROM Paciente e WHERE e.endereco = :endereco")
-    public List<Paciente> findByEndereco(@Param("endereco") Endereco endereco);
-
 }
