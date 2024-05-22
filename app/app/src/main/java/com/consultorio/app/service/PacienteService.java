@@ -1,8 +1,10 @@
 package com.consultorio.app.service;
 
+import com.consultorio.app.auditing.Audit;
 import com.consultorio.app.dto.PacienteDTO;
 import com.consultorio.app.entity.Endereco;
 import com.consultorio.app.entity.Paciente;
+import com.consultorio.app.repository.AuditRepository;
 import com.consultorio.app.repository.PacienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,10 +15,11 @@ import java.util.Optional;
 @Service
 public class PacienteService {
     private PacienteRepository pacienteRepository;
-
+    private AuditRepository auditRepository;
     @Autowired
-    public PacienteService(PacienteRepository pacienteRepository) {
+    public PacienteService(PacienteRepository pacienteRepository, AuditRepository auditRepository) {
         this.pacienteRepository = pacienteRepository;
+        this.auditRepository = auditRepository;
     }
 
     public Optional<PacienteDTO> findById(Long id) {
@@ -57,6 +60,13 @@ public class PacienteService {
         novoPaciente.setEndereco(endereco);
 
         pacienteRepository.save(novoPaciente);
+
+        // Registra a operação de auditoria na tabela de auditoria
+        Audit audit = new Audit();
+        audit.setOperation("CREATE_PACIENTE");
+        audit.setCreatedBy(audit.getCreatedBy());
+        audit.setCreateDate(audit.getCreateDate());
+        auditRepository.save(audit);
     }
 
     public void atualizarPaciente(Long id, Paciente paciente) {
@@ -86,6 +96,13 @@ public class PacienteService {
             }
 
             pacienteRepository.save(pacienteExistente);
+
+            // Registra a operação de auditoria na tabela de auditoria
+            Audit audit = new Audit();
+            audit.setOperation("INSERT_PACIENTE");
+            audit.setCreatedBy(audit.getCreatedBy());
+            audit.setCreateDate(audit.getCreateDate());
+            auditRepository.save(audit);
         } else {
             throw new IllegalArgumentException("ID Inválido!");
         }
@@ -96,6 +113,13 @@ public class PacienteService {
 
         if (pacienteOptional.isPresent()) {
             pacienteRepository.delete(pacienteOptional.get());
+
+            // Registra a operação de auditoria na tabela de auditoria
+            Audit audit = new Audit();
+            audit.setOperation("DELETE_PACIENTE");
+            audit.setCreatedBy(audit.getCreatedBy());
+            audit.setCreateDate(audit.getCreateDate());
+            auditRepository.save(audit);
         } else {
             throw new IllegalArgumentException("Paciente não encontrado para o ID informado!");
         }

@@ -1,21 +1,26 @@
 package com.consultorio.app.service;
 
+import com.consultorio.app.auditing.Audit;
 import com.consultorio.app.dto.EnderecoDTO;
 import com.consultorio.app.entity.Endereco;
+import com.consultorio.app.repository.AuditRepository;
 import com.consultorio.app.repository.EnderecoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class EnderecoService {
     private EnderecoRepository enderecoRepository;
+    private AuditRepository auditRepository;
 
     @Autowired
-    public EnderecoService(EnderecoRepository enderecoRepository){
+    public EnderecoService(EnderecoRepository enderecoRepository, AuditRepository auditRepository){
         this.enderecoRepository = enderecoRepository;
+        this.auditRepository = auditRepository;
     }
 
     public Optional<EnderecoDTO> findById(Long id){
@@ -53,6 +58,7 @@ public class EnderecoService {
     }
 
     public void cadastrarEndereco(String estado, String cidade, String rua, int numero, String cep) {
+        // Cria um novo objeto Endereco
         Endereco novoEndereco = new Endereco();
         novoEndereco.setEstado(estado);
         novoEndereco.setCidade(cidade);
@@ -60,7 +66,15 @@ public class EnderecoService {
         novoEndereco.setNumero(numero);
         novoEndereco.setCep(cep);
 
+        // Salva o novo endereço no repositório de endereços
         enderecoRepository.save(novoEndereco);
+
+        // Registra a operação de auditoria na tabela de auditoria
+        Audit audit = new Audit();
+        audit.setOperation("CREATE_ENDERECO");
+        audit.setCreatedBy(audit.getCreatedBy());
+        audit.setCreateDate(audit.getCreateDate());
+        auditRepository.save(audit);
     }
 
     public void atualizar(Long id, Endereco endereco) {
@@ -76,6 +90,13 @@ public class EnderecoService {
             enderecoExistente.setCep(endereco.getCep());
 
             enderecoRepository.save(enderecoExistente);
+
+            // Registra a operação de auditoria na tabela de auditoria
+            Audit audit = new Audit();
+            audit.setOperation("INSERT_ENDERECO");
+            audit.setCreatedBy(audit.getCreatedBy());
+            audit.setCreateDate(audit.getCreateDate());
+            auditRepository.save(audit);
         } else {
             throw new IllegalArgumentException("ID Inválido!");
         }
@@ -85,6 +106,13 @@ public class EnderecoService {
 
         if (enderecoOptional.isPresent()) {
             enderecoRepository.delete(enderecoOptional.get());
+
+            // Registra a operação de auditoria na tabela de auditoria
+            Audit audit = new Audit();
+            audit.setOperation("DELETE_ENDERECO");
+            audit.setCreatedBy(audit.getCreatedBy());
+            audit.setCreateDate(audit.getCreateDate());
+            auditRepository.save(audit);
         } else {
             throw new IllegalArgumentException("Endereço não encontrado para o ID informado!");
         }
